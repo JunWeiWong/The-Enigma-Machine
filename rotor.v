@@ -2,7 +2,7 @@ module rotor(out, in, rotate);
     input [25:0] in;
     input rotate;
     output [25:0] out;
-    reg [4:0] 
+    reg [4:0]; 
     localparam A = 5'b00000, B = 5'b000001, C = 5'b00010, D = 5'b00011,
                E = 5'b00100, F = 5'b00101, G = 5'b00110, H = 5'b00111,
                I = 5'b01000, J = 5'b01001, K = 5'b01010, L = 5'b01011,
