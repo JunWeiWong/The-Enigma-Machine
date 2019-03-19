@@ -5,12 +5,12 @@ module EnigmaMachine(SW, LEDR, KEY);
 	 wire [25:0] cov_out, rotor_out, ref_out, rotor_out2, cov_out2;
 	 
 	 binary_to_alphabet b0(.in(SW[4:0]), .out(cov_out));
-	 rotor r0(.in(cov_out), .out(rotor_out), .rotate(~KEY[1]));
+	 rotor r0(.in(cov_out), .out(rotor_out), .rotate(~KEY[0]));
 	 reflector ref0(.in(rotor_out), .out(ref_out));
-	 rotor r0r(.in(ref_out), .out(rotor_out2), .rotate(~KEY[1]));
+	 rotor r0r(.in(ref_out), .out(rotor_out2), .rotate(~KEY[0]));
 	 alphabet_to_binary a0(.in(rotor_out2), .out(cov_out2));
 	 
-	 always @(posedge ~KEY[0])
+	 always @(posedge ~KEY[1])
 	     begin
 		      LEDR[4:0] <= cov_out2; 	    
 		  end
