@@ -18,40 +18,46 @@ module rotor(out, in, clock, rotate, reset);
 	  
      always @(posedge rotate)
      begin
-	       if(reset) state <= A;
-			 else begin
-				 case(state)
-				 A: state = B;
-				 B: state = C;
-				 C: state = D;
-				 D: state = E;
-				 E: state = F;
-				 F: state = G;
-				 G: state = H;
-				 H: state = I;
-				 I: state = J;
-				 J: state = K;
-				 K: state = L;
-				 L: state = M;
-				 M: state = N;
-				 N: state = O;
-				 O: state = P;
-				 P: state = Q;
-				 Q: state = R;
-				 R: state = S;
-				 S: state = T;
-				 T: state = U;
-				 U: state = V;
-				 V: state = W;
-				 W: state = X;
-				 X: state = Y;
-				 Y: state = Z;
-				 Z: state = A;
+	       case(state)
+				 A: state = reset ? A : B;
+				 B: state = reset ? A : C;
+				 C: state = reset ? A : D;
+				 D: state = reset ? A : E;
+				 E: state = reset ? A : F;
+				 F: state = reset ? A : G;
+				 G: state = reset ? A : H;
+				 H: state = reset ? A : I;
+				 I: state = reset ? A : J;
+				 J: state = reset ? A : K;
+				 K: state = reset ? A : L;
+				 L: state = reset ? A : M;
+				 M: state = reset ? A : N;
+				 N: state = reset ? A : O;
+				 O: state = reset ? A : P;
+				 P: state = reset ? A : Q;
+				 Q: state = reset ? A : R;
+				 R: state = reset ? A : S;
+				 S: state = reset ? A : T;
+				 T: state = reset ? A : U;
+				 U: state = reset ? A : V;
+				 V: state = reset ? A : W;
+				 W: state = reset ? A : X;
+				 X: state = reset ? A : Y;
+				 Y: state = reset ? A : Z;
+				 Z: state = reset ? A : A;
 				 default: state = A;
 				 endcase
-			end
      end
     
+//	  always @(posedge clock)
+//     begin
+//			if (reset == 1'b1)
+//				s <= A;
+//			else 
+//				s <= state;
+//		end
+	  
+	  
      wire [51:0] shiftinput;
      wire [51:0] shiftoutput;
      wire [25:0] intermediate;
@@ -79,24 +85,24 @@ module default_mapping(in, out);
      assign out[3] = in[23];
      assign out[4] = in[9];
      assign out[5] = in[10];
-     assign out[6] = in[5];
+     assign out[6] = in[15];
      assign out[7] = in[18];
      assign out[8] = in[25];
-     assign out[9] = in[3];
-     assign out[10] = in[11];
-     assign out[11] = in[4];
-     assign out[12] = in[19];
-     assign out[13] = in[7];
+     assign out[9] = in[4];
+     assign out[10] = in[5];
+     assign out[11] = in[24];
+     assign out[12] = in[2];
+     assign out[13] = in[16];
      assign out[14] = in[21];
      assign out[15] = in[6];
      assign out[16] = in[13];
-     assign out[17] = in[15];
-     assign out[18] = in[24];
-     assign out[19] = in[1];
-     assign out[20] = in[16];
-     assign out[21] = in[0];
-     assign out[22] = in[8];
-     assign out[23] = in[14];
-     assign out[24] = in[2];
-     assign out[25] = in[22];
+     assign out[17] = in[0];
+     assign out[18] = in[7];
+     assign out[19] = in[22];
+     assign out[20] = in[1];
+     assign out[21] = in[14];
+     assign out[22] = in[19];
+     assign out[23] = in[3];
+     assign out[24] = in[11];
+     assign out[25] = in[8];
 endmodule

@@ -1,5 +1,5 @@
-`include "rotor.v"
-`include "reflector.v"
+//`include "rotor.v"
+//`include "reflector.v"
 
 module EnigmaMachine(SW, HEX0, HEX1, KEY, CLOCK_50);
     input [9:0] SW;
@@ -10,9 +10,9 @@ module EnigmaMachine(SW, HEX0, HEX1, KEY, CLOCK_50);
 	 reg [4:0] to_hex;
 	 
 	 binary_to_alphabet b0(.in(SW[4:0]), .out(cov_out));
-	 rotor r0(.in(cov_out), .out(rotor_out), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(~KEY[0]));
+	 rotor r0(.in(cov_out), .out(rotor_out), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
 	 reflector ref0(.in(rotor_out), .out(ref_out));
-	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(~KEY[0]));
+	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
 	 alphabet_to_binary a0(.in(rotor_out2), .out(cov_out2));
 	 
 	 always @(posedge ~KEY[2])
