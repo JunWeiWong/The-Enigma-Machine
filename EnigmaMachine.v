@@ -1,24 +1,30 @@
-module EnigmaMachine(SW, LEDR, KEY);
+`include "rotor.v"
+`include "reflector.v"
+
+module EnigmaMachine(SW, LEDR, KEY, CLOCK_50);
     input [9:0] SW;
 	 input [3:0] KEY;
+	 input CLOCK_50;
 	 output [9:0] LEDR;
 	 wire [25:0] cov_out, rotor_out, ref_out, rotor_out2, cov_out2;
+	 reg [4:0] to_ledr;
 	 
 	 binary_to_alphabet b0(.in(SW[4:0]), .out(cov_out));
-	 rotor r0(.in(cov_out), .out(rotor_out), .rotate(~KEY[0]));
+	 rotor r0(.in(cov_out), .out(rotor_out), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(~KEY[0]));
 	 reflector ref0(.in(rotor_out), .out(ref_out));
-	 rotor r0r(.in(ref_out), .out(rotor_out2), .rotate(~KEY[0]));
+	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(~KEY[0]));
 	 alphabet_to_binary a0(.in(rotor_out2), .out(cov_out2));
 	 
-	 always @(posedge ~KEY[1])
+	 always @(posedge ~KEY[2])
 	     begin
-		      LEDR[4:0] <= cov_out2; 	    
+		      to_ledr <= cov_out2; 	    
 		  end
+    assign	LEDR[4:0] = to_ledr;
 endmodule
 
-module binary_to_alphabet(in, out)
+module binary_to_alphabet(in, out);
     input [4:0] in;
-	 output [25:0] out;
+	 output reg [25:0] out;
 	 
 	 always @(*)
 	     begin
@@ -54,9 +60,9 @@ module binary_to_alphabet(in, out)
 		  end
 endmodule
 
-module alphabet_to_binary(in, out)
+module alphabet_to_binary(in, out);
     input [25:0] in;
-	 output [4:0] out;
+	 output reg [4:0] out;
 	 
 	 always @(*)
 	     begin

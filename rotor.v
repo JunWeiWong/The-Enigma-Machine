@@ -1,8 +1,7 @@
-module rotor(out, in, rotate);
+module rotor(out, in, clock, rotate, reset);
     input [25:0] in;
-    input rotate;
+    input rotate, clock, reset;
     output [25:0] out;
-    reg [4:0]; 
     localparam A = 5'b00000, B = 5'b000001, C = 5'b00010, D = 5'b00011,
                E = 5'b00100, F = 5'b00101, G = 5'b00110, H = 5'b00111,
                I = 5'b01000, J = 5'b01001, K = 5'b01010, L = 5'b01011,
@@ -12,43 +11,50 @@ module rotor(out, in, rotate);
                Y = 5'b11000, Z = 5'b11001;
      
      reg [4:0] state;
-     
+	  
+	  initial begin
+	       state <= A;
+	  end
+	  
      always @(posedge rotate)
-     begin: state_table
-          case(state)
-          A: state = B;
-          B: state = C;
-          C: state = D;
-          D: state = E;
-          E: state = F;
-          F: state = G;
-          G: state = H;
-          H: state = I;
-          I: state = J;
-          J: state = K;
-          K: state = L;
-          L: state = M;
-          M: state = N;
-          N: state = O;
-          O: state = P;
-          P: state = Q;
-          Q: state = R;
-          R: state = S;
-          S: state = T;
-          T: state = U;
-          U: state = V;
-          V: state = W;
-          W: state = X;
-          X: state = Y;
-          Y: state = Z;
-          Z: state = A;
-          default: state = A;
-          endcase
+     begin
+	       if(reset) state <= A;
+			 else begin
+				 case(state)
+				 A: state = B;
+				 B: state = C;
+				 C: state = D;
+				 D: state = E;
+				 E: state = F;
+				 F: state = G;
+				 G: state = H;
+				 H: state = I;
+				 I: state = J;
+				 J: state = K;
+				 K: state = L;
+				 L: state = M;
+				 M: state = N;
+				 N: state = O;
+				 O: state = P;
+				 P: state = Q;
+				 Q: state = R;
+				 R: state = S;
+				 S: state = T;
+				 T: state = U;
+				 U: state = V;
+				 V: state = W;
+				 W: state = X;
+				 X: state = Y;
+				 Y: state = Z;
+				 Z: state = A;
+				 default: state = A;
+				 endcase
+			end
      end
     
      wire [51:0] shiftinput;
      wire [51:0] shiftoutput;
-     wire [25:0] intermdiate;
+     wire [25:0] intermediate;
      
      assign shiftinput = ({in[25:0],26'b0} >> state);
      
@@ -61,11 +67,11 @@ module rotor(out, in, rotate);
 endmodule
 
 
-module default_mapping(out, in)
+module default_mapping(in, out);
      input [25:0] in;
      output [25:0] out;
      
-     assign out = 26'b0;
+     //assign out = 26'b0;
      
      assign out[0] = in[17];
      assign out[1] = in[20];
