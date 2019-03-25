@@ -1,35 +1,102 @@
 //`include "rotor.v"
 //`include "reflector.v"
 
-module EnigmaMachine(SW, HEX0, HEX1, KEY, CLOCK_50);
+module EnigmaMachine(SW, HEX0, HEX1, KEY, CLOCK_50, PS2_DAT, PS2_CLK);
     input [9:0] SW;
 	 input [3:0] KEY;
 	 input CLOCK_50;
+	 input PS2_DAT;
+	 input PS2_CLK;
 	 output [6:0] HEX0, HEX1;
-	 wire [25:0] cov_out, rotor_out, ref_out, rotor_out2, cov_out2;
-	 reg [4:0] to_hex;
+	 wire [25:0] key_out, rotor_out, ref_out, rotor_out2;
+	 wire [4:0] cov_out2;
 	 
-	 binary_to_alphabet b0(.in(SW[4:0]), .out(cov_out));
-	 rotor r0(.in(cov_out), .out(rotor_out), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
+	 keyboardm k0(.PS2_CLK(PS2_CLK), .PS2_DAT(PS2_DAT), .CLOCK_50(CLOCK_50), .letter(key_out));
+	 rotor r0(.in(key_out), .out(rotor_out), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
 	 reflector ref0(.in(rotor_out), .out(ref_out));
 	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
 	 alphabet_to_binary a0(.in(rotor_out2), .out(cov_out2));
 	 
-	 always @(posedge ~KEY[2])
-	     begin
-		      to_hex <= cov_out2; 	    
-		  end
+//	 always @(posedge ~KEY[2])
+//	     begin
+//		      to_hex <= cov_out2; 	    
+//		  end
     
 	 hex_decoder H0(
-        .hex_digit(to_hex[3:0]), 
+        .hex_digit(cov_out2[3:0]), 
         .segments(HEX0)
         );
         
     hex_decoder H1(
-        .hex_digit({3'b000, to_hex[4]}), 
+        .hex_digit({3'b000, cov_out2[4]}), 
         .segments(HEX1)
         );
 endmodule
+
+module keyboardm(PS2_CLK, PS2_DAT, CLOCK_50, letter);
+	input PS2_DAT;
+	input PS2_CLK;
+	input CLOCK_50;
+
+	// Don't forget to take in PS2_CLK and PS2_DAT as inputs to your top level module.
+	// RELEVANT FOR PS2 KB
+	wire [7:0] scan_code;
+	wire read, scan_ready;
+	reg [7:0] scan_history [ 1 : 2 ];
+	
+	always @( posedge scan_ready )
+	begin
+		scan_history [ 2 ] <= scan_history [ 1 ];
+		scan_history [ 1 ] <= scan_code ;
+	end
+	
+	// END OF PS2 KB SETUP
+	// Keyboard Section
+	keyboard kb (
+		. keyboard_clk ( PS2_CLK ),
+		. keyboard_data ( PS2_DAT ),
+		. clock50 ( CLOCK_50 ),
+		. reset ( 0 ),
+		. read ( read ),
+		. scan_ready ( scan_ready ),
+		. scan_code ( scan_code ));
+	
+	oneshot pulse (
+		. pulse_out ( read ),
+		. trigger_in ( scan_ready ),
+		. clk ( CLOCK_50 ));
+	
+	output wire[25:0] letter; 
+
+	assign letter[0] = ((scan_history[1] == 'h1C) && (scan_history[2][7:4] != 'hF)); // Key for A
+	assign letter[1] = ((scan_history[1] == 'h32) && (scan_history[2][7:4] != 'hF)); // Key for B
+	assign letter[2] = ((scan_history[1] == 'h21) && (scan_history[2][7:4] != 'hF)); // Key for C
+	assign letter[3] = ((scan_history[1] == 'h23) && (scan_history[2][7:4] != 'hF)); // Key for D
+	assign letter[4] = ((scan_history[1] == 'h24) && (scan_history[2][7:4] != 'hF)); // Key for E
+	assign letter[5] = ((scan_history[1] == 'h2B) && (scan_history[2][7:4] != 'hF)); // Key for F
+	assign letter[6] = ((scan_history[1] == 'h34) && (scan_history[2][7:4] != 'hF)); // Key for G
+	assign letter[7] = ((scan_history[1] == 'h33) && (scan_history[2][7:4] != 'hF)); // Key for H
+	assign letter[8] = ((scan_history[1] == 'h43) && (scan_history[2][7:4] != 'hF)); // Key for I
+	assign letter[9] = ((scan_history[1] == 'h3B) && (scan_history[2][7:4] != 'hF)); // Key for J
+	assign letter[10] = ((scan_history[1] == 'h42) && (scan_history[2][7:4] != 'hF)); // Key for K
+	assign letter[11] = ((scan_history[1] == 'h4B) && (scan_history[2][7:4] != 'hF)); // Key for L
+	assign letter[12] = ((scan_history[1] == 'h3A) && (scan_history[2][7:4] != 'hF)); // Key for M
+	assign letter[13] = ((scan_history[1] == 'h31) && (scan_history[2][7:4] != 'hF)); // Key for N
+	assign letter[14] = ((scan_history[1] == 'h44) && (scan_history[2][7:4] != 'hF)); // Key for O
+	assign letter[15] = ((scan_history[1] == 'h4D) && (scan_history[2][7:4] != 'hF)); // Key for P
+	assign letter[16] = ((scan_history[1] == 'h15) && (scan_history[2][7:4] != 'hF)); // Key for Q
+	assign letter[17] = ((scan_history[1] == 'h2D) && (scan_history[2][7:4] != 'hF)); // Key for R
+	assign letter[18] = ((scan_history[1] == 'h1B) && (scan_history[2][7:4] != 'hF)); // Key for S
+	assign letter[19] = ((scan_history[1] == 'h2C) && (scan_history[2][7:4] != 'hF)); // Key for T
+	assign letter[20] = ((scan_history[1] == 'h3C) && (scan_history[2][7:4] != 'hF)); // Key for U
+	assign letter[21] = ((scan_history[1] == 'h2A) && (scan_history[2][7:4] != 'hF)); // Key for V
+	assign letter[22] = ((scan_history[1] == 'h1D) && (scan_history[2][7:4] != 'hF)); // Key for W
+	assign letter[23] = ((scan_history[1] == 'h22) && (scan_history[2][7:4] != 'hF)); // Key for X
+	assign letter[24] = ((scan_history[1] == 'h35) && (scan_history[2][7:4] != 'hF)); // Key for Y
+	assign letter[25] = ((scan_history[1] == 'h1A) && (scan_history[2][7:4] != 'hF)); // Key for Z
+		
+endmodule
+
 
 module binary_to_alphabet(in, out);
     input [4:0] in;
