@@ -10,6 +10,7 @@ module EnigmaMachine(SW, HEX0, HEX1, KEY, CLOCK_50, PS2_DAT, PS2_CLK);
 	 output [6:0] HEX0, HEX1;
 	 wire [25:0] key_out, rotor_out, ref_out, rotor_out2;
 	 wire [4:0] cov_out2;
+	 reg[4:0] press;
 	 
 	 keyboardm k0(.PS2_CLK(PS2_CLK), .PS2_DAT(PS2_DAT), .CLOCK_50(CLOCK_50), .letter(key_out));
 	 rotor r0(.in(key_out), .out(rotor_out), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
@@ -17,10 +18,13 @@ module EnigmaMachine(SW, HEX0, HEX1, KEY, CLOCK_50, PS2_DAT, PS2_CLK);
 	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
 	 alphabet_to_binary a0(.in(rotor_out2), .out(cov_out2));
 	 
-//	 always @(posedge ~KEY[2])
-//	     begin
-//		      to_hex <= cov_out2; 	    
-//		  end
+	 
+	 always @(posedge clock)
+	     begin
+		      if (press == cov_out2)
+					display d(cov_out2, press);
+					press = cov_out;
+		  end
     
 	 hex_decoder H0(
         .hex_digit(cov_out2[3:0]), 
