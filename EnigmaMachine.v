@@ -8,15 +8,14 @@ module EnigmaMachine(SW, KEY, LEDR, CLOCK_50, PS2_DAT, PS2_CLK, VGA_CLK, VGA_HS,
 	 input PS2_DAT;
 	 input PS2_CLK;
 	 output[9:0] LEDR;
-	 output			VGA_CLK;   				//	VGA Clock
-	 output			VGA_HS;					//	VGA H_SYNC
-	 output			VGA_VS;					//	VGA V_SYNC
-	 output			VGA_BLANK_N;				//	VGA BLANK
- 	 output			VGA_SYNC_N;				//	VGA SYNC
-    output	[9:0]	VGA_R;   				//	VGA Red[9:0]
-	 output	[9:0]	VGA_G;	 				//	VGA Green[9:0]
-	 output	[9:0]	VGA_B;   				//	VGA Blue[9:0]
-	 //output [6:0] HEX0, HEX1;
+	 output		 VGA_CLK;   				//	VGA Clock
+	 output		 VGA_HS;					//	VGA H_SYNC
+	 output		 VGA_VS;					//	VGA V_SYNC
+	 output		 VGA_BLANK_N;				//	VGA BLANK
+ 	 output  	 VGA_SYNC_N;				//	VGA SYNC
+    output [9:0]VGA_R;   				//	VGA Red[9:0]
+	 output [9:0]VGA_G;	 				//	VGA Green[9:0]
+	 output [9:0]VGA_B;   				//	VGA Blue[9:0]
 	 wire [25:0] key_out, rotor_out, ref_out, rotor_out2;
 	 wire [4:0] cov_out2;
 	 wire press;
@@ -26,7 +25,7 @@ module EnigmaMachine(SW, KEY, LEDR, CLOCK_50, PS2_DAT, PS2_CLK, VGA_CLK, VGA_HS,
 	 reflector ref0(.in(rotor_out), .out(ref_out));
 	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
 	 alphabet_to_binary a0(.in(rotor_out2), .out(cov_out2));
-	 display d(.clock(CLOCK_50), .in(cov_out2), .press(press), .reset(~KEY[3]),
+	 display d(.clock(CLOCK_50), .in(cov_out2), .press(1), .reset(~KEY[3]),
 		// The ports below are for the VGA output.  Do not change.
 		.VGA_CLK(VGA_CLK),   						//	VGA Clock
 		.VGA_HS(VGA_HS),							//	VGA H_SYNC
@@ -36,66 +35,30 @@ module EnigmaMachine(SW, KEY, LEDR, CLOCK_50, PS2_DAT, PS2_CLK, VGA_CLK, VGA_HS,
 		.VGA_R(VGA_R),   						//	VGA Red[9:0]
 		.VGA_G(VGA_G),	 						//	VGA Green[9:0]
 		.VGA_B(VGA_B));
-	 
-//	 reg [4:0] store;
-//	 
-//	 initial	 begin
-//		store <= 5'b11111;
-//		press <= 0;
-//	 end 
-//	 
-//	 always @(posedge CLOCK_50)
-//	 begin
-//		if (store != cov_out2)
-//			begin
-//				press <= 1;
-//				store <= cov_out2;
-//			end
-//		else
-//			press <= 0;
-//	 end
-	
-	
-//	 always @(posedge clock)
-//	     begin
-//		      if (press == cov_out2)
-//					display d(cov_out2, press);
-//					press = cov_out;
-//		  end
-    
-//	 hex_decoder H0(
-//        .hex_digit(cov_out2[3:0]), 
-//        .segments(HEX0)
-//        );
-//        
-//    hex_decoder H1(
-//        .hex_digit({3'b000, cov_out2[4]}), 
-//        .segments(HEX1)
-//        );
 endmodule
 
 module keyboardm(PS2_CLK, PS2_DAT, CLOCK_50, letter, ready);
 	input PS2_DAT;
 	input PS2_CLK;
 	input CLOCK_50;
+	output ready;
 
 	// Don't forget to take in PS2_CLK and PS2_DAT as inputs to your top level module.
 	// RELEVANT FOR PS2 KB
 	wire [7:0] scan_code;
 	wire read, scan_ready;
-	reg [7:0] scan_history [ 1 : 2 ];
-	output wire ready;
+	reg [7:0] scan_history[1:2];
+	//	output wire ready;
 	
-	always @( posedge scan_ready )
+	always @(posedge scan_ready)
 	begin
-		scan_history [ 2 ] <= scan_history [ 1 ];
-		scan_history [ 1 ] <= scan_code ;
+		scan_history [2] <= scan_history[1];
+		scan_history [1] <= scan_code;
 	end
 	
 	// END OF PS2 KB SETUP
 	// Keyboard Section
-	keyboard kb (
-		. keyboard_clk ( PS2_CLK ),
+	keyboard kb (.keyboard_clk(PS2_CLK ),
 		. keyboard_data ( PS2_DAT ),
 		. clock50 ( CLOCK_50 ),
 		. reset ( 0 ),
@@ -107,8 +70,7 @@ module keyboardm(PS2_CLK, PS2_DAT, CLOCK_50, letter, ready);
 		. pulse_out ( read ),
 		. trigger_in ( scan_ready ),
 		. clk ( CLOCK_50 ));
-	
-	assign ready = scan_ready;
+		
 	output wire[25:0] letter; 
 
 	assign letter[0] = ((scan_history[1] == 'h1C) && (scan_history[2][7:4] != 'hF)); // Key for A
@@ -137,7 +99,25 @@ module keyboardm(PS2_CLK, PS2_DAT, CLOCK_50, letter, ready);
 	assign letter[23] = ((scan_history[1] == 'h22) && (scan_history[2][7:4] != 'hF)); // Key for X
 	assign letter[24] = ((scan_history[1] == 'h35) && (scan_history[2][7:4] != 'hF)); // Key for Y
 	assign letter[25] = ((scan_history[1] == 'h1A) && (scan_history[2][7:4] != 'hF)); // Key for Z
-		
+	
+//	reg [24:0] store;
+   reg press;
+//	always @(posedge CLOCK_50)
+//	begin
+//		if (store != letter)
+//			begin
+//				press <= 1;
+//				store <= letter;
+//			end
+//		else
+//			press <= 0;
+//	end
+	
+	always @(posedge scan_ready)
+	begin
+		press <= 1;
+	end
+	assign ready = press;
 endmodule
 
 
@@ -212,7 +192,7 @@ module alphabet_to_binary(in, out);
 					 26'b00100000000000000000000000: out = 5'b10111;
 					 26'b01000000000000000000000000: out = 5'b11000;
 					 26'b10000000000000000000000000: out = 5'b11001;
-					 default: out = 5'b00000;
+					 default: out = 5'b11111;
 				endcase
 		  end
 endmodule

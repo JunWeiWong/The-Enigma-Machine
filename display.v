@@ -181,10 +181,10 @@ module datapath(in,draw,erase,clk,out_c,out_x,out_y);
 	
 	indicator i(.in(in), .x(cur_x), .y(cur_y));
 	
-	initial begin
-		pre_x <= 8'b0;
-		pre_y <= 7'b0;
-	end
+//	initial begin
+//		pre_x <= 8'b0;
+//		pre_y <= 7'b0;
+//	end
 	
 	always @(posedge clk)
 		begin
@@ -316,6 +316,10 @@ module indicator(in, x, y);
 			5'b11001: begin
 				x <= 8'd 33;
 				y <= 7'd 90;
+			end
+			default: begin
+				x <= 200;
+				y <= 200;
 			end
 		endcase
 	end	
