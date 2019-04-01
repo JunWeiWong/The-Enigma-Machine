@@ -21,11 +21,11 @@ module EnigmaMachine(SW, KEY, LEDR, CLOCK_50, PS2_DAT, PS2_CLK, VGA_CLK, VGA_HS,
 	 wire press;
 	 assign LEDR[0] = press;
 	 keyboardm k0(.PS2_CLK(PS2_CLK), .PS2_DAT(PS2_DAT), .CLOCK_50(CLOCK_50), .letter(key_out), .ready(press));
-	 rotor r0(.in(key_out), .out(rotor_out), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
+	 rotor r0(.in(key_out), .out(rotor_out), .clock(CLOCK_50), .rotate(press), .reset(SW[9]));
 	 reflector ref0(.in(rotor_out), .out(ref_out));
-	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(~KEY[1]), .reset(SW[9]));
+	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(press), .reset(SW[9]));
 	 alphabet_to_binary a0(.in(rotor_out2), .out(cov_out2));
-	 display d(.clock(CLOCK_50), .in(cov_out2), .press(1), .reset(~KEY[3]),
+	 display d(.clock(CLOCK_50), .in(cov_out2), .press(press), .reset(~KEY[3]),
 		// The ports below are for the VGA output.  Do not change.
 		.VGA_CLK(VGA_CLK),   						//	VGA Clock
 		.VGA_HS(VGA_HS),							//	VGA H_SYNC
@@ -41,7 +41,7 @@ module keyboardm(PS2_CLK, PS2_DAT, CLOCK_50, letter, ready);
 	input PS2_DAT;
 	input PS2_CLK;
 	input CLOCK_50;
-	output ready;
+	output reg ready;
 
 	// Don't forget to take in PS2_CLK and PS2_DAT as inputs to your top level module.
 	// RELEVANT FOR PS2 KB
@@ -101,7 +101,7 @@ module keyboardm(PS2_CLK, PS2_DAT, CLOCK_50, letter, ready);
 	assign letter[25] = ((scan_history[1] == 'h1A) && (scan_history[2][7:4] != 'hF)); // Key for Z
 	
 //	reg [24:0] store;
-   reg press;
+//   reg press;
 //	always @(posedge CLOCK_50)
 //	begin
 //		if (store != letter)
@@ -113,11 +113,19 @@ module keyboardm(PS2_CLK, PS2_DAT, CLOCK_50, letter, ready);
 //			press <= 0;
 //	end
 	
-	always @(posedge scan_ready)
+//	always @(posedge scan_ready)
+//	begin
+//		press <= 1;
+//	end
+//	assign ready = press;
+	
+	always @(*)
 	begin
-		press <= 1;
+	    if(scan_history[2][7:4] != 'hF)
+		     ready <= 1'b1;
+		 else if (scan_history[2][7:4] == 'hF)
+		     ready <= 1'b0;
 	end
-	assign ready = press;
 endmodule
 
 
