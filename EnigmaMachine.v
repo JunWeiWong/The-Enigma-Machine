@@ -1,13 +1,14 @@
 //`include "rotor.v"
 //`include "reflector.v"
 
-module EnigmaMachine(SW, KEY, LEDR, CLOCK_50, PS2_DAT, PS2_CLK, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
+module EnigmaMachine(SW, KEY, LEDR, HEX0, HEX1, CLOCK_50, PS2_DAT, PS2_CLK, VGA_CLK, VGA_HS, VGA_VS, VGA_BLANK_N, VGA_SYNC_N, VGA_R, VGA_G, VGA_B);
 	 input [9:0] SW;
 	 input [3:0] KEY;
 	 input CLOCK_50;
 	 input PS2_DAT;
 	 input PS2_CLK;
 	 output[9:0] LEDR;
+	 output[6:0] HEX0, HEX1;
 	 output		 VGA_CLK;   				//	VGA Clock
 	 output		 VGA_HS;					//	VGA H_SYNC
 	 output		 VGA_VS;					//	VGA V_SYNC
@@ -19,11 +20,12 @@ module EnigmaMachine(SW, KEY, LEDR, CLOCK_50, PS2_DAT, PS2_CLK, VGA_CLK, VGA_HS,
 	 wire [25:0] key_out, rotor_out, ref_out, rotor_out2;
 	 wire [4:0] cov_out2;
 	 wire press;
+	 wire [4:0] state_o;
 	 assign LEDR[0] = press;
 	 keyboardm k0(.PS2_CLK(PS2_CLK), .PS2_DAT(PS2_DAT), .CLOCK_50(CLOCK_50), .letter(key_out), .ready(press));
-	 rotor r0(.in(key_out), .out(rotor_out), .clock(CLOCK_50), .rotate(press), .reset(SW[9]));
+	 rotor r0(.in(key_out), .out(rotor_out), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[4:0]), .state(state_o), .num(LEDR[1]));
 	 reflector ref0(.in(rotor_out), .out(ref_out));
-	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(press), .reset(SW[9]));
+	 rotor r0r(.in(ref_out), .out(rotor_out2), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[4:0]), .state(), .num());
 	 alphabet_to_binary a0(.in(rotor_out2), .out(cov_out2));
 	 display d(.clock(CLOCK_50), .in(cov_out2), .press(press), .reset(~KEY[3]),
 		// The ports below are for the VGA output.  Do not change.
@@ -35,6 +37,9 @@ module EnigmaMachine(SW, KEY, LEDR, CLOCK_50, PS2_DAT, PS2_CLK, VGA_CLK, VGA_HS,
 		.VGA_R(VGA_R),   						//	VGA Red[9:0]
 		.VGA_G(VGA_G),	 						//	VGA Green[9:0]
 		.VGA_B(VGA_B));
+		
+	hex_decoder h0(.hex_digit(state_o[3:0]), .segments(HEX0));
+	hex_decoder h1(.hex_digit({3'b000, state_o[4]}), .segments(HEX1));
 endmodule
 
 module keyboardm(PS2_CLK, PS2_DAT, CLOCK_50, letter, ready);
@@ -205,28 +210,28 @@ module alphabet_to_binary(in, out);
 		  end
 endmodule
 
-//module hex_decoder(hex_digit, segments);
-//    input [3:0] hex_digit;
-//    output reg [6:0] segments;
-//   
-//    always @(*)
-//        case (hex_digit)
-//            4'h0: segments = 7'b100_0000;
-//            4'h1: segments = 7'b111_1001;
-//            4'h2: segments = 7'b010_0100;
-//            4'h3: segments = 7'b011_0000;
-//            4'h4: segments = 7'b001_1001;
-//            4'h5: segments = 7'b001_0010;
-//            4'h6: segments = 7'b000_0010;
-//            4'h7: segments = 7'b111_1000;
-//            4'h8: segments = 7'b000_0000;
-//            4'h9: segments = 7'b001_1000;
-//            4'hA: segments = 7'b000_1000;
-//            4'hB: segments = 7'b000_0011;
-//            4'hC: segments = 7'b100_0110;
-//            4'hD: segments = 7'b010_0001;
-//            4'hE: segments = 7'b000_0110;
-//            4'hF: segments = 7'b000_1110;   
-//            default: segments = 7'h7f;
-//        endcase
-//endmodule
+module hex_decoder(hex_digit, segments);
+    input [3:0] hex_digit;
+    output reg [6:0] segments;
+   
+    always @(*)
+        case (hex_digit)
+            4'h0: segments = 7'b100_0000;
+            4'h1: segments = 7'b111_1001;
+            4'h2: segments = 7'b010_0100;
+            4'h3: segments = 7'b011_0000;
+            4'h4: segments = 7'b001_1001;
+            4'h5: segments = 7'b001_0010;
+            4'h6: segments = 7'b000_0010;
+            4'h7: segments = 7'b111_1000;
+            4'h8: segments = 7'b000_0000;
+            4'h9: segments = 7'b001_1000;
+            4'hA: segments = 7'b000_1000;
+            4'hB: segments = 7'b000_0011;
+            4'hC: segments = 7'b100_0110;
+            4'hD: segments = 7'b010_0001;
+            4'hE: segments = 7'b000_0110;
+            4'hF: segments = 7'b000_1110;   
+            default: segments = 7'h7f;
+        endcase
+endmodule

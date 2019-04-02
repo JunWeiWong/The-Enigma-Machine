@@ -1,6 +1,7 @@
-module rotor(out, in, clock, rotate, reset);
+module rotor(out, in, clock, rotate, set, set_state, state, num);
     input [25:0] in;
-    input rotate, clock, reset;
+    input rotate, clock, set;
+	 input [4:0] set_state;
     output [25:0] out;
     localparam A = 5'b00000, B = 5'b000001, C = 5'b00010, D = 5'b00011,
                E = 5'b00100, F = 5'b00101, G = 5'b00110, H = 5'b00111,
@@ -10,53 +11,65 @@ module rotor(out, in, clock, rotate, reset);
                U = 5'b10100, V = 5'b10101, W = 5'b10110, X = 5'b10111,
                Y = 5'b11000, Z = 5'b11001;
      
-     reg [4:0] state;
-	  
-	  initial begin
-	       state <= A;
-	  end
+     output reg [4:0] state;
+	  reg [4:0] next_state;
+//	  initial state = set;
+//	  always @(*)
+//	  begin
+//	      if (set)
+//			    state <= set_state;
+//	  end
 	  
      always @(posedge rotate)
      begin
 	       case(state)
-				 A: state = reset ? A : B;
-				 B: state = reset ? A : C;
-				 C: state = reset ? A : D;
-				 D: state = reset ? A : E;
-				 E: state = reset ? A : F;
-				 F: state = reset ? A : G;
-				 G: state = reset ? A : H;
-				 H: state = reset ? A : I;
-				 I: state = reset ? A : J;
-				 J: state = reset ? A : K;
-				 K: state = reset ? A : L;
-				 L: state = reset ? A : M;
-				 M: state = reset ? A : N;
-				 N: state = reset ? A : O;
-				 O: state = reset ? A : P;
-				 P: state = reset ? A : Q;
-				 Q: state = reset ? A : R;
-				 R: state = reset ? A : S;
-				 S: state = reset ? A : T;
-				 T: state = reset ? A : U;
-				 U: state = reset ? A : V;
-				 V: state = reset ? A : W;
-				 W: state = reset ? A : X;
-				 X: state = reset ? A : Y;
-				 Y: state = reset ? A : Z;
-				 Z: state = reset ? A : A;
-				 default: state = A;
-				 endcase
-     end
-    
-//	  always @(posedge clock)
-//     begin
-//			if (reset == 1'b1)
-//				s <= A;
-//			else 
-//				s <= state;
-//		end
-	  
+				 A: next_state = B;
+				 B: next_state = C;
+				 C: next_state = D;
+				 D: next_state = E;
+				 E: next_state = F;
+				 F: next_state = G;
+				 G: next_state = H;
+				 H: next_state = I;
+				 I: next_state = J;
+				 J: next_state = K;
+				 K: next_state = L;
+				 L: next_state = M;
+				 M: next_state = N;
+				 N: next_state = O;
+				 O: next_state = P;
+				 P: next_state = Q;
+				 Q: next_state = R;
+				 R: next_state = S;
+				 S: next_state = T;
+				 T: next_state = U;
+				 U: next_state = V;
+				 V: next_state = W;
+				 W: next_state = X;
+				 X: next_state = Y;
+				 Y: next_state = Z;
+				 Z: next_state = A;
+				 default: next_state = A;
+			endcase
+	  end
+  
+     output reg num;
+	  always @(*)
+     begin
+			if (set == 1'b1)
+			    begin
+				    state <= set_state;
+					 num <= 0;
+			    end
+			else if ((set == 1'b0) && (rotate == 1))
+				 begin
+			        if (num == 0)
+						state <= next_state - 1'b1;
+					  else 
+						state <= next_state;
+					num <= 1;
+				 end
+	  end
 	  
      wire [51:0] shiftinput;
      wire [51:0] shiftoutput;
