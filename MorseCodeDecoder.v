@@ -1,20 +1,18 @@
 module MorseCodeDecoder(clock, in, load, show, reset, out);
     input clock;
 	 input[4:0] in;
-	 input show, load, reset;
+	 input load, show, reset;
 	 output out;
 	 wire pulse;
 	 wire[30:0] cycle;
 	 wire[30:0] wire0;
 	 wire[13:0] wire1;
-	 wire[139:0] wire2;
 	 assign cycle = 25000000;
 	 
 	 RateDivider r0(.speed(cycle), .clock(clock), .reset_n(reset), .count(wire0));
 	 assign pulse = (wire0 == 0) ? 1 : 0;
 	 LUT l0(.in(in), .out(wire1));
-	 buffer b0(.in(wire1), .load(load), .clock(clock), .message(wire2));
-	 Shifter s0(.clock(clock), .enable(pulse), .show(show), .reset(reset), .d(wire2), .q(out));
+	 Shifter s0(.clock(clock), .enable(pulse), .load(load), .show(show), .reset(reset), .d(wire1), .q(out));
 endmodule
 
 module LUT(in, out);
@@ -75,36 +73,28 @@ module RateDivider(speed, clock, reset_n, count);
     end
 endmodule
 
-module Shifter(clock, enable, show, reset, d, q);
-    input clock, enable, show, reset;
-    input [139:0] d;
+module Shifter(clock, enable, load, show, reset, d, q);
+    input clock, enable, show, load, reset;
+    input [13:0] d;
     output q;
-    reg [139:0] code;
+	 reg [153:0] message;
+    reg [153:0] code;
 
+	 always @(posedge load)
+	     begin
+			  message[13:0] = d;
+			  message = message << 14;
+		  end
     always @(posedge clock)
     begin
         if (reset == 1'b0)
             code = 0;
         else if (show == 1'b1)
-            code = d;
+            code = message;
         else if (enable == 1'b1)
             code = code << 1;
     end
 
-    assign q = code[139];
-
-endmodule
-
-module buffer(in, load, clock, message);
-    input[13:0] in;
-	 input load, clock;
-	 output reg [139:0] message;
-	 
-	 always @(posedge clock)
-	 begin
-	     if (load)
-		      message[13:0] = in;
-				message = message >> 14;
-	 end
+    assign q = code[153];
 
 endmodule

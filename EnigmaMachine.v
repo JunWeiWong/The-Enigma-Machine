@@ -21,7 +21,7 @@ module EnigmaMachine(SW, KEY, LEDR, HEX0, HEX1, HEX2, HEX3, CLOCK_50, PS2_DAT, P
 	 wire [4:0] cov_out2;
 	 wire press;
 	 wire [4:0] state_o, state2_o;
-
+	 assign LEDR[2] = press;
 	 keyboardm k0(.PS2_CLK(PS2_CLK), .PS2_DAT(PS2_DAT), .CLOCK_50(CLOCK_50), .letter(key_out), .ready(press));
 	 plugboard p0(.in(key_out), .out(plugboard_in));
 	 rotor r0(.in(plugboard_in), .out(rotor_out), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[4:0]), .state(state_o), .num(LEDR[1]));
@@ -42,7 +42,7 @@ module EnigmaMachine(SW, KEY, LEDR, HEX0, HEX1, HEX2, HEX3, CLOCK_50, PS2_DAT, P
 		.VGA_G(VGA_G),	 						//	VGA Green[9:0]
 		.VGA_B(VGA_B));
     
-	 MorseCodeDecoder m0(.clock(CLOCK_50), .in(cov_out2), .load(press), .show(~KEY[1]), .reset(KEY[3]), .out(LEDR[0]));
+	 MorseCodeDecoder m0(.clock(CLOCK_50), .in(cov_out2), .load(~KEY[2]), .show(~KEY[1]), .reset(KEY[3]), .out(LEDR[0]));
     hex_decoder h0(.hex_digit(state_o[3:0]), .segments(HEX0));
     hex_decoder h1(.hex_digit({3'b000, state_o[4]}), .segments(HEX1));
     hex_decoder h2(.hex_digit(state2_o[3:0]), .segments(HEX2));
