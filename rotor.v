@@ -1,4 +1,4 @@
-module rotor(out, in, clock, rotate, set, set_state, state, num);
+module rotor(out, in, clock, rotate, set, set_state, state);
     input [25:0] in;
     input rotate, clock, set;
 	 input [4:0] set_state;
@@ -49,27 +49,39 @@ module rotor(out, in, clock, rotate, set, set_state, state, num);
 				 X: next_state = Y;
 				 Y: next_state = Z;
 				 Z: next_state = A;
-				 default: next_state = A;
+				 //5'b11010: next_state = A;
+				 default: next_state = set_state;
 			endcase
 	  end
-  
-     output reg num;
+
 	  always @(*)
-     begin
-			if (set == 1'b1)
+	  begin
+	      if (set == 1'b1)
 			    begin
-				    state <= set_state;
-					 num <= 0;
-			    end
+					  state = 5'b11010;
+				 end
 			else if ((set == 1'b0) && (rotate == 1))
 				 begin
-			        if (num == 0)
-						state <= next_state - 1'b1;
-					  else 
-						state <= next_state;
-					num <= 1;
+						state = next_state;
 				 end
 	  end
+//     output reg num;
+//	  always @(*)
+//     begin
+//			if (set == 1'b1)
+//			    begin
+//				    state <= set_state;
+//					 num <= 0;
+//			    end
+//			else if ((set == 1'b0) && (rotate == 1))
+//				 begin
+//			        if (num == 0)
+//						state <= next_state - 1'b1;
+//					  else 
+//						state <= next_state;
+//					num <= 1;
+//				 end
+//	  end
 	  
      wire [51:0] shiftinput;
      wire [51:0] shiftoutput;
