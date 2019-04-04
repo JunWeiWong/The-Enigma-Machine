@@ -1,4 +1,4 @@
-module rotor2(out, in, clock, rotate, set, set_state, state, num);
+module rotor2(out, in, clock, rotate, set, set_state, state);
     input [25:0] in;
     input rotate, clock, set;
 	 input [4:0] set_state;
@@ -62,21 +62,15 @@ module rotor2(out, in, clock, rotate, set, set_state, state, num);
 			endcase
 	  end
   
-     output reg num;
-	  always @(*)
-     begin
-			if (set == 1'b1)
+     always @(*)
+	  begin
+	      if (set == 1'b1)
 			    begin
-				    state <= set_state;
-					 num <= 0;
-			    end
+					  state = 5'b11010;
+				 end
 			else if ((set == 1'b0) && (rotate == 1))
 				 begin
-			        if (num == 0)
-						state <= next_state - 1'b1;
-					  else 
-						state <= next_state;
-					num <= 1;
+						state = set_state;
 				 end
 	  end
 	  

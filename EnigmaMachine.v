@@ -21,13 +21,13 @@ module EnigmaMachine(SW, KEY, LEDR, HEX0, HEX1, HEX2, HEX3, CLOCK_50, PS2_DAT, P
 	 wire [4:0] cov_out2;
 	 wire press;
 	 wire [4:0] state_o, state2_o;
-	 assign LEDR[2] = press;
+	 //assign LEDR[2] = press;
 	 keyboardm k0(.PS2_CLK(PS2_CLK), .PS2_DAT(PS2_DAT), .CLOCK_50(CLOCK_50), .letter(key_out), .ready(press));
 	 plugboard p0(.in(key_out), .out(plugboard_in));
 	 rotor r0(.in(plugboard_in), .out(rotor_out), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[4:0]), .state(state_o));
-	 rotor2 r20(.in(rotor_out), .out(rotor2_out), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[4:0]), .state(state2_o), .num());
+	 rotor2 r20(.in(rotor_out), .out(rotor2_out), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[9:5]), .state(state2_o));
 	 reflector ref0(.in(rotor2_out), .out(ref_out));
-	 rotor2 r20r(.in(ref_out), .out(rotor2_out2), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[4:0]), .state(), .num());
+	 rotor2 r20r(.in(ref_out), .out(rotor2_out2), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[9:5]), .state());
 	 rotor r0r(.in(rotor2_out2), .out(rotor_out2), .clock(CLOCK_50), .rotate(press), .set(~KEY[0]), .set_state(SW[4:0]), .state());
 	 plugboard p1(.in(rotor_out2), .out(plugboard_out));
 	 alphabet_to_binary a0(.in(plugboard_out), .out(cov_out2));
